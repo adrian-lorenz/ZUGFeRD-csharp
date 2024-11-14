@@ -311,6 +311,47 @@ and this one covers the same with `itext7` which is the successor of `itextsharp
 
 https://stackoverflow.com/a/37804285
 
+# Attach XML and convert PDF to PDF A/3
+A simple free solution is Spire.PDF Community. Also free for commercial projects, with small restrictions
+https://www.e-iceblue.com/Download/download-pdf-for-net-free.html
+
+```csharp
+public byte[] EmbeddedXML(byte[] inputPdfBytes, byte[] xmlInvoiceBytes, string title)
+    {
+        using var inputPdfStream = new MemoryStream(inputPdfBytes);
+        var pdfDocument = new PdfDocument();
+        pdfDocument.LoadFromStream(inputPdfStream);
+
+            // XML-Anhang hinzufügen
+            var attachment = new PdfAttachment("factur-x.xml", xmlInvoiceBytes)
+            {
+                MimeType = "text/xml",
+                Description = title,
+                ModificationDate = DateTime.Now,
+
+            };
+            pdfDocument.Attachments.Add(attachment);
+
+            // PDF speichern
+            using var memoryStream = new MemoryStream();
+            pdfDocument.SaveToStream(memoryStream, FileFormat.PDF);
+
+            // PDF/A-3-Konvertierung durchführen
+            var res = ConvertPDFA3A(memoryStream.ToArray());
+
+            return res;
+        }
+        private static byte[] ConvertPDFA3A(byte[] inputPdfBytes)
+        {
+            using var inputPdfStream = new MemoryStream(inputPdfBytes);
+            var converter = new PdfStandardsConverter(inputPdfStream);
+            using var outputPdfStream = new MemoryStream();
+            converter.ToPdfA3A(outputPdfStream);
+            return outputPdfStream.ToArray();
+        }
+
+```
+
 # Writing XML attachments to PDF files
 It is also possible to add the XML ZUGFeRD or XRechnung attachment to PDF files using `itextsharp`.
 You find information about this here:
